@@ -48,7 +48,7 @@ Each room is defined with a `## Room` header and a list of properties. You can a
 
 * **`content`**: Inserts a floating element in the center of the room.
 
-* List your rooms: for example: room 1, room 2, etc.
+* You can attach a note to an image like this: [[YourNote]](![[YourImage.png]])
 
 * The plugin supports Zotflow links and Excalidraw diagrams.
 

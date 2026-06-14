@@ -67,13 +67,15 @@ export default class MemoryPalacePlugin extends Plugin {
     async activateView() {
         const { workspace } = this.app;
         
-        let leaf: WorkspaceLeaf | null | undefined;
+        let leaf: WorkspaceLeaf | null = null;
         const leaves = workspace.getLeavesOfType(MEMORY_PALACE_VIEW);
         
         if (leaves.length > 0) {
-            leaf = leaves[0];
+            leaf = leaves[0] ?? null;
         } else {
-            leaf = workspace.getRightLeaf(false);
+            // FIX: Volvemos al método correcto de la API y manejamos la nulidad estricta
+            leaf = workspace.getRightLeaf(false) ?? null;
+            
             if (leaf) {
                 await leaf.setViewState({ type: MEMORY_PALACE_VIEW, active: true });
             }

@@ -4,7 +4,6 @@ import { CSS3DRenderer, CSS3DObject } from "three/examples/jsm/renderers/CSS3DRe
 import { parseRoomsFromText, RoomData } from "./RoomParser";
 import MemoryPalacePlugin from "./main";
 
-
 export const MEMORY_PALACE_VIEW = "memory-palace-view";
 
 export class MemoryPalaceView extends ItemView {
@@ -16,23 +15,18 @@ export class MemoryPalaceView extends ItemView {
     private targetZ: number = 2000; 
     private targetX: number = 0;
 
-    // --- NUEVAS PROPIEDADES DE CÁMARA ---
     private targetRotX: number = 0; 
     private targetRotY: number = 0;
     private isDragging: boolean = false;
-    // ------------------------------------
     
     private wallComponents: Component[] = [];
     private currentFilePath: string = "";
     private isRefreshing: boolean = false;
     private nextFileToRefresh: TFile | null = null;
 
-        constructor(leaf: WorkspaceLeaf, plugin: MemoryPalacePlugin) {
-
+    constructor(leaf: WorkspaceLeaf, plugin: MemoryPalacePlugin) {
         super(leaf);
-
-                this.plugin = plugin;
-
+        this.plugin = plugin;
     }
 
     getViewType() {
@@ -46,17 +40,25 @@ export class MemoryPalaceView extends ItemView {
     async onOpen() {
         const container = this.containerEl.children[1] as HTMLElement;
         container.empty();
-        container.style.overflow = "hidden";
-        container.style.backgroundColor = "var(--background-primary)";
+        
+        // FIX: Uso de setCssStyles en lugar de estilo directo
+        container.setCssStyles({
+            overflow: "hidden",
+            backgroundColor: "var(--background-primary)"
+        });
         
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(75, 1, 1, 10000);
         this.camera.position.set(this.targetX, 0, this.targetZ); 
 
         this.renderer = new CSS3DRenderer();
-        this.renderer.domElement.style.pointerEvents = "auto"; 
-        this.renderer.domElement.style.position = "absolute";
-        this.renderer.domElement.style.top = "0";
+        
+        // FIX: Reemplazo de asignaciones estáticas del renderer DOM
+        this.renderer.domElement.setCssStyles({
+            pointerEvents: "auto",
+            position: "absolute",
+            top: "0"
+        });
         
         container.appendChild(this.renderer.domElement);
 
@@ -72,7 +74,6 @@ export class MemoryPalaceView extends ItemView {
             })
         );
 
-        // --- SISTEMA DE ROTACIÓN Y RATÓN ---
         this.registerDomEvent(this.renderer.domElement, "mousedown", (e: MouseEvent) => {
             if (e.target === this.renderer.domElement) {
                 this.isDragging = true;
@@ -93,10 +94,8 @@ export class MemoryPalaceView extends ItemView {
             }
         });
 
-        // --- NUEVO: SISTEMA DE CONTROLES POR TECLADO (WASD + Q) ---
         this.registerDomEvent(window, "keydown", (e: KeyboardEvent) => {
             const activeEl = window.document.activeElement;
-            // TS Estricto + Guard: Evita disparar el movimiento si el usuario está escribiendo en Obsidian
             if (activeEl && (
                 activeEl.tagName === "INPUT" || 
                 activeEl.tagName === "TEXTAREA" || 
@@ -105,7 +104,7 @@ export class MemoryPalaceView extends ItemView {
                 return;
             }
 
-            const step = 150; // Sensibilidad/velocidad del movimiento por pulsación
+            const step = 150; 
             
             switch (e.code) {
                 case "KeyW":
@@ -122,11 +121,9 @@ export class MemoryPalaceView extends ItemView {
                     this.targetX += step;
                     break;
                 case "KeyQ":
-                    // FIX: Centrado de cámara relativo (solo endereza y centra en X)
-                    this.targetX = 0;       // Vuelve al centro del meridiano horizontal
-                    this.targetRotX = 0;    // Endereza la vista hacia arriba/abajo
-                    this.targetRotY = 0;    // Endereza la vista hacia la izquierda/derecha
-                    // Se elimina this.targetZ para que permanezcas en la sala en la que estás
+                    this.targetX = 0;       
+                    this.targetRotX = 0;    
+                    this.targetRotY = 0;    
                     break;
             }
         });
@@ -168,7 +165,6 @@ export class MemoryPalaceView extends ItemView {
                 this.wallComponents = [];
                 this.scene.clear();
 
-                // FIX: Reseteo completo incluyendo el nuevo eje horizontal targetX
                 this.targetX = 0;
                 this.targetZ = 2000;
                 this.targetRotX = 0;
@@ -262,37 +258,37 @@ export class MemoryPalaceView extends ItemView {
     private async createFloatingContent(markdown: string, sourcePath: string, size: number, x: number, y: number, z: number, roomColor: string) {
         const contentDiv = document.createElement('div');
         contentDiv.className = `mp-wall mp-floating-content`;
-        contentDiv.style.width = `${size}px`;
-        contentDiv.style.height = `${size}px`;
         
-        // 🔴 FIX CRÍTICO: La caja principal 1000x1000 es 100% fantasmal (no bloquea clics)
-        contentDiv.style.pointerEvents = "none"; 
-        
-        contentDiv.style.backgroundColor = "transparent";
-        contentDiv.style.boxSizing = "border-box";
+        // FIX: Agrupar propiedades CSS estáticas
+        contentDiv.setCssStyles({
+            width: `${size}px`,
+            height: `${size}px`,
+            pointerEvents: "none",
+            backgroundColor: "transparent",
+            boxSizing: "border-box"
+        });
         
         const innerDiv = document.createElement('div');
         innerDiv.className = "mp-content";
-        innerDiv.style.width = "100%";
-        innerDiv.style.height = "100%"; 
-        innerDiv.style.fontSize = "2.5em";
-        innerDiv.style.textAlign = "center";
         
-        innerDiv.style.display = "flex";
-        innerDiv.style.flexDirection = "column"; 
-        innerDiv.style.justifyContent = "center"; 
-        innerDiv.style.alignItems = "center"; 
-        innerDiv.style.position = "relative";
-        
-        // 🔴 El contenedor de contenido también debe ser fantasmal
-        innerDiv.style.pointerEvents = "none";
+        innerDiv.setCssStyles({
+            width: "100%",
+            height: "100%",
+            fontSize: "2.5em",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "relative",
+            pointerEvents: "none"
+        });
         
         innerDiv.addClass("markdown-preview-view", "markdown-rendered");
 
         let processedMarkdown = await this.resolveBlockEmbeds(markdown, sourcePath);
 
         const itemRegex = /\[\[([^\]#|]+)(#[^\]|]+)?\]\]\(!?\[\[([^\]]+\.(?:png|jpe?g|gif|svg|webp|bmp))\]\]\)/gi;
-        
         processedMarkdown = processedMarkdown.replace(itemRegex, (match, baseNote, subTarget, imageName) => {
             const base = baseNote?.trim() || "";
             const sub = subTarget?.trim() || "";
@@ -307,7 +303,6 @@ export class MemoryPalaceView extends ItemView {
         });
 
         const imageRegex = /!\[\[([^\]]+\.(png|jpe?g|gif|svg|webp|bmp))\]\]/gi;
-        
         processedMarkdown = processedMarkdown.replace(imageRegex, (match, imageName) => {
             const file: TFile | null = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
             if (file) {
@@ -322,45 +317,44 @@ export class MemoryPalaceView extends ItemView {
         
         await MarkdownRenderer.renderMarkdown(processedMarkdown, innerDiv, sourcePath, wallComponent);
 
-        // --- DOM FIX: Alinear múltiples imágenes y reparar hitboxes ---
-        
         const containers = innerDiv.querySelectorAll('p, .markdown-preview-section, div');
         containers.forEach(child => {
             const el = child as HTMLElement;
-            // Quitamos la colisión a los contenedores pero los convertimos en Flex para alinear múltiples imágenes
             if (el.tagName !== 'IMG' && el.tagName !== 'A') {
-                el.style.pointerEvents = 'none'; 
-                el.style.display = 'flex';
-                el.style.flexWrap = 'wrap';
-                el.style.justifyContent = 'center';
-                el.style.alignItems = 'center';
-                el.style.gap = '20px'; 
+                el.setCssStyles({
+                    pointerEvents: 'none',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '20px'
+                });
             }
         });
 
         const interactives = innerDiv.querySelectorAll<HTMLElement>('a.internal-link, a.external-link, .internal-embed');
         interactives.forEach(el => {
-            el.style.pointerEvents = 'auto'; // Solo el enlace captura el clic
+            el.setCssStyles({ pointerEvents: 'auto' });
         });
 
         const allImages = innerDiv.querySelectorAll<HTMLImageElement>('img');
         allImages.forEach(img => {
-            img.style.maxWidth = '45%';
-            img.style.maxHeight = '75%';
-            img.style.objectFit = 'contain';
-            img.style.display = 'inline-block';
-            img.style.position = 'relative'; 
-            img.style.zIndex = '10'; 
-            
-            // 🟢 CRÍTICO: Recuperamos la interacción SOLAMENTE en los píxeles de la imagen
-            img.style.pointerEvents = 'auto'; 
+            img.setCssStyles({
+                maxWidth: '45%',
+                maxHeight: '75%',
+                objectFit: 'contain',
+                display: 'inline-block',
+                position: 'relative',
+                zIndex: '10',
+                pointerEvents: 'auto'
+            });
             
             const altText = img.getAttribute('alt');
             if (altText && altText.includes('|mp-link|')) {
                 const parts = altText.split('|mp-link|');
                 img.setAttribute('alt', parts[0] || "");
                 img.setAttribute('data-target-note', parts[1] || "");
-                img.style.cursor = 'pointer';
+                img.setCssStyles({ cursor: 'pointer' });
             }
         });
 
@@ -387,16 +381,17 @@ export class MemoryPalaceView extends ItemView {
             const titleDiv = document.createElement('div');
             titleDiv.className = 'mp-room-title';
             
-            titleDiv.style.fontSize = '8em';
-            titleDiv.style.fontWeight = 'bold';
-            titleDiv.style.color = 'var(--text-normal)';
-            titleDiv.style.textShadow = '0px 4px 10px rgba(0,0,0,0.8)';
-            titleDiv.style.pointerEvents = 'auto'; 
-            
-            titleDiv.style.display = 'flex';
-            titleDiv.style.justifyContent = 'center';
-            titleDiv.style.alignItems = 'center';
-            titleDiv.style.textAlign = 'center';
+            titleDiv.setCssStyles({
+                fontSize: '8em',
+                fontWeight: 'bold',
+                color: 'var(--text-normal)',
+                textShadow: '0px 4px 10px rgba(0,0,0,0.8)',
+                pointerEvents: 'auto',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center'
+            });
 
             const titleComponent = new Component();
             titleComponent.load();
@@ -407,41 +402,30 @@ export class MemoryPalaceView extends ItemView {
 
             this.bindInteractions(titleDiv, sourcePath, titleDiv);
             
-            // Ajustamos el título flotante un poco más al frente
             const titleObj = new CSS3DObject(titleDiv);
             titleObj.position.set(0, size / 2 + 150, z + size * 0.8);
             this.scene.add(titleObj);
         }
 
-        // --- VISUALIZACIÓN DE PARED FRONTAL OPTIMIZADA ---
-        // FIX: Se coloca exactamente a size/2 para formar un cubo perfecto y no invadir la Room anterior.
         if (room.front && room.front.trim() !== "" && room.front.trim().toLowerCase() !== "vacío") {
             await this.createWall(room.front, sourcePath, size, 0, 0, z + size / 2, 0, 0, 0, 'front', bgColor);
         }
 
-        // --- VISUALIZACIÓN DE PARED TRASERA (BACK) ---
-        // Se mantiene en el fondo del cubo (z - size / 2)
         if (room.back && room.back.trim() !== "" && room.back.trim().toLowerCase() !== "vacío") {
             await this.createWall(room.back, sourcePath, size, 0, 0, z - size / 2, 0, 0, 0, 'back', bgColor);
         }
 
-        // --- PAREDES PERMANENTES INTERIORES ---
         await this.createWall(room.up, sourcePath, size, 0, size/2, z, Math.PI / 2, 0, 0, 'top', bgColor);       
         await this.createWall(room.down, sourcePath, size, 0, -size/2, z, -Math.PI / 2, 0, 0, 'bottom', bgColor);    
         await this.createWall(room.left, sourcePath, size, -size/2, 0, z, 0, Math.PI / 2, 0, 'left', bgColor);     
         await this.createWall(room.right, sourcePath, size, size/2, 0, z, 0, -Math.PI / 2, 0, 'right', bgColor);    
 
-        // --- VISUALIZACIÓN DEL OBJETO CENTRAL FLOTANTE (CONTENT) ---
-        // FIX: Al tener un cubo geométricamente perfecto, el centro exacto del mismo vuelve a ser simplemente "z".
         if (room.content && room.content.trim() !== "") {
             await this.createFloatingContent(room.content, sourcePath, size, 0, 0, z, room.color || bgColor);
         }
     }
 
-
-    // --- NUEVO MÉTODO AÑADIDO AQUÍ ---
     private async resolveBlockEmbeds(text: string, sourcePath: string): Promise<string> {
-        // Regex para capturar transclusiones de bloques: ![[Archivo#^ID-bloque]]
         const blockEmbedRegex = /!\[\[([^#\]|]+)#\^([a-zA-Z0-9-]+)\]\]/g;
         let processedText = text;
         
@@ -454,10 +438,8 @@ export class MemoryPalaceView extends ItemView {
             
             if (!fullMatch || !linkPath || !blockId) continue;
             
-            // 1. Intentamos resolver el archivo en el path de Obsidian
             let targetFile = this.app.metadataCache.getFirstLinkpathDest(linkPath.trim(), sourcePath);
             
-            // Fallback si no se encontró con getFirstLinkpathDest
             if (!targetFile) {
                 const cleanPath = linkPath.trim();
                 const abstractFile = this.app.vault.getAbstractFileByPath(cleanPath) 
@@ -474,31 +456,24 @@ export class MemoryPalaceView extends ItemView {
                 
                 let extractedText = "";
 
-                // 2. Extraer el contenido del bloque
                 if (blockData) {
                     const content = await this.app.vault.read(targetFile);
                     const startOffset = blockData.position?.start?.offset;
                     const endOffset = blockData.position?.end?.offset;
                     
-                    // Comprobación de nulidad para modo estricto
                     if (typeof startOffset === 'number' && typeof endOffset === 'number') {
                         extractedText = content.substring(startOffset, endOffset);
                     }
                 } else {
-                    // Fallback escaneando líneas si la caché falló
                     const content = await this.app.vault.read(targetFile);
                     const lines = content.split("\n");
                     const targetLine = lines.find(l => l.includes(`^${blockId}`));
                     if (targetLine) extractedText = targetLine;
                 }
 
-                // 3. Limpiar y reemplazar
                 if (extractedText) {
-                    // Quitamos el ID del bloque del render final
                     let cleanText = extractedText.replace(new RegExp(`\\^${blockId}`, "gi"), "");
-                    // Removemos etiquetas de metadata propias de Zotflow
                     cleanText = cleanText.replace(/\[!zotflow-[^\]]+\]/gi, "");
-                    // Limpiamos blockquotes innecesarios
                     cleanText = cleanText.replace(/>/g, "").trim();
                     
                     processedText = processedText.replace(fullMatch, cleanText);
@@ -506,47 +481,42 @@ export class MemoryPalaceView extends ItemView {
             }
         }
         return processedText;
-        
     }
-    // --- FIN DEL NUEVO MÉTODO ---
-    
 
     private async createWall(markdown: string, sourcePath: string, size: number, x: number, y: number, z: number, rotX: number, rotY: number, rotZ: number, side: string, bgColor: string) {
         const wallDiv = document.createElement('div');
         wallDiv.className = `mp-wall mp-wall-${side}`;
-        wallDiv.style.width = `${size}px`;
-        wallDiv.style.height = `${size}px`;
         
-        // 🔴 FIX CRÍTICO: La pared física NO atrapa clicks. El color de fondo se verá, 
-        // pero dejará pasar el raycast para que puedas apuntar libremente a los elementos en el 3D.
-        wallDiv.style.pointerEvents = "none"; 
-        
-        wallDiv.style.backgroundColor = bgColor;
-        wallDiv.style.border = "2px solid rgba(255, 255, 255, 0.1)";
-        wallDiv.style.boxSizing = "border-box";
+        wallDiv.setCssStyles({
+            width: `${size}px`,
+            height: `${size}px`,
+            pointerEvents: "none",
+            backgroundColor: bgColor,
+            border: "2px solid rgba(255, 255, 255, 0.1)",
+            boxSizing: "border-box"
+        });
         
         const contentDiv = document.createElement('div');
         contentDiv.className = "mp-content";
-        contentDiv.style.width = "100%";
-        contentDiv.style.height = "100%"; 
-        contentDiv.style.fontSize = "2.5em";
-        contentDiv.style.textAlign = "center";
         
-        contentDiv.style.display = "flex";
-        contentDiv.style.flexDirection = "column"; 
-        contentDiv.style.justifyContent = "center"; 
-        contentDiv.style.alignItems = "center"; 
-        contentDiv.style.position = "relative";
-        
-        // 🔴 Contenedor interno también en none
-        contentDiv.style.pointerEvents = "none"; 
+        contentDiv.setCssStyles({
+            width: "100%",
+            height: "100%",
+            fontSize: "2.5em",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "relative",
+            pointerEvents: "none"
+        });
         
         contentDiv.addClass("markdown-preview-view", "markdown-rendered");
 
         let processedMarkdown = await this.resolveBlockEmbeds(markdown, sourcePath);
 
         const itemRegex = /\[\[([^\]#|]+)(#[^\]|]+)?\]\]\(!?\[\[([^\]]+\.(?:png|jpe?g|gif|svg|webp|bmp))\]\]\)/gi;
-        
         processedMarkdown = processedMarkdown.replace(itemRegex, (match, baseNote, subTarget, imageName) => {
             const base = baseNote?.trim() || "";
             const sub = subTarget?.trim() || "";
@@ -561,7 +531,6 @@ export class MemoryPalaceView extends ItemView {
         });
 
         const imageRegex = /!\[\[([^\]]+\.(png|jpe?g|gif|svg|webp|bmp))\]\]/gi;
-        
         processedMarkdown = processedMarkdown.replace(imageRegex, (match, imageName) => {
             const file: TFile | null = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
             if (file) {
@@ -576,51 +545,56 @@ export class MemoryPalaceView extends ItemView {
         
         await MarkdownRenderer.renderMarkdown(processedMarkdown, contentDiv, sourcePath, wallComponent);
         
-        // --- DOM FIX: Estructura anti-colisiones de Obsidian ---
         const useFullSpace = this.plugin.settings?.fullSpaceImages ?? false;
 
         const containers = contentDiv.querySelectorAll('p, .markdown-preview-section, div');
         containers.forEach(child => {
             const el = child as HTMLElement;
             if (el.tagName !== 'IMG' && el.tagName !== 'A') {
-                el.style.pointerEvents = 'none'; // Desactivar cajas invisibles
+                const styles: Partial<CSSStyleDeclaration> = { pointerEvents: 'none' };
                 if (!useFullSpace) {
-                    el.style.display = 'flex';
-                    el.style.flexWrap = 'wrap';
-                    el.style.justifyContent = 'center';
-                    el.style.alignItems = 'center';
-                    el.style.gap = '20px'; // Separar visualmente múltiples imágenes 
+                    styles.display = 'flex';
+                    styles.flexWrap = 'wrap';
+                    styles.justifyContent = 'center';
+                    styles.alignItems = 'center';
+                    styles.gap = '20px';
                 }
+                el.setCssStyles(styles as any); // Type assertion segura
             }
         });
 
         const interactives = contentDiv.querySelectorAll<HTMLElement>('a.internal-link, a.external-link, .internal-embed');
         interactives.forEach(el => {
-            el.style.pointerEvents = 'auto';
-            el.style.position = 'relative';
-            el.style.zIndex = '10';
+            el.setCssStyles({
+                pointerEvents: 'auto',
+                position: 'relative',
+                zIndex: '10'
+            });
         });
 
         const allImages = contentDiv.querySelectorAll<HTMLImageElement>('img');
         allImages.forEach(img => {
             if (useFullSpace) {
-                img.style.position = 'absolute';
-                img.style.top = '0';
-                img.style.left = '0';
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
-                img.style.zIndex = '0';
-                img.style.pointerEvents = 'auto'; 
+                img.setCssStyles({
+                    position: 'absolute',
+                    top: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    zIndex: '0',
+                    pointerEvents: 'auto'
+                });
             } else {
-                img.style.maxWidth = '45%';
-                img.style.maxHeight = '45%';
-                img.style.objectFit = 'contain';
-                img.style.display = 'inline-block';
-                img.style.position = 'relative'; 
-                img.style.zIndex = '10'; 
-                // 🟢 CRÍTICO: La imagen (ej. hierba.png) intercepta el clic sin importar dónde esté flotando el Gengar.
-                img.style.pointerEvents = 'auto'; 
+                img.setCssStyles({
+                    maxWidth: '45%',
+                    maxHeight: '45%',
+                    objectFit: 'contain',
+                    display: 'inline-block',
+                    position: 'relative',
+                    zIndex: '10',
+                    pointerEvents: 'auto'
+                });
             }
 
             const altText = img.getAttribute('alt');
@@ -628,12 +602,12 @@ export class MemoryPalaceView extends ItemView {
                 const parts = altText.split('|mp-link|');
                 img.setAttribute('alt', parts[0] || "");
                 img.setAttribute('data-target-note', parts[1] || "");
-                img.style.cursor = 'pointer';
+                img.setCssStyles({ cursor: 'pointer' });
             }
         });
 
         if (useFullSpace) {
-            contentDiv.style.zIndex = "1"; 
+            contentDiv.setCssStyles({ zIndex: "1" });
         }
 
         this.bindInteractions(contentDiv, sourcePath, wallDiv);
@@ -651,11 +625,9 @@ export class MemoryPalaceView extends ItemView {
     private animate = () => {
         requestAnimationFrame(this.animate);
         
-        // Interpolación de posición (Lerp lineal al 10% por frame)
         this.camera.position.x += (this.targetX - this.camera.position.x) * 0.1;
         this.camera.position.z += (this.targetZ - this.camera.position.z) * 0.1;
         
-        // Interpolación de rotación
         this.camera.rotation.x += (this.targetRotX - this.camera.rotation.x) * 0.1;
         this.camera.rotation.y += (this.targetRotY - this.camera.rotation.y) * 0.1;
 

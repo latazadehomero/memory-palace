@@ -82,18 +82,6 @@ You can adjust the rendering behavior in the plugin settings:
 
 
 
-
----
-
-## 🏗️ Installation
-
-1. Download the latest version from the [Releases](https://www.google.com/search?q=../../releases) section.
-2. Unzip the file into your Obsidian folder: `Vault/.obsidian/plugins/memory-palace-3d/`.
-3. Restart Obsidian and enable the plugin in **Settings > Community Plugins**[cite: 2].
-4. Click the box icon (`box`) on the sidebar (Ribbon) to open your Memory Palace[cite: 2].
-
----
-
 ## 🛠️ Developer Notes
 
 This plugin is built using:

@@ -1,0 +1,11 @@
+{
+	"id": "Memory-palace",
+	"name": "Memory palace",
+	"version": "1.0.0",
+	"minAppVersion": "1.0.0",
+	"description": "Create your memory palaces in 3D",
+	"author": "Latazadehomero",
+	"authorUrl": "https://obsidian.md",
+	"fundingUrl": "https://obsidian.md/pricing",
+	"isDesktopOnly": false
+}

@@ -15,21 +15,21 @@ export default class MemoryPalacePlugin extends Plugin {
 
         this.addSettingTab(new MemoryPalaceSettingTab(this.app, this));
 
-        this.addRibbonIcon('box', 'Abrir Memory Palace 3D', () => {
-            this.activateView();
+        this.addRibbonIcon('box', 'Open 3D View', () => {
+            this.activateView().catch(console.error); // FIX: Promesa manejada
         });
 
         this.addCommand({
-            id: 'open-memory-palace',
-            name: 'Open Memory Palace 3D',
+            id: 'open-view', // FIX: Removido el prefijo del ID
+            name: 'Open View', // FIX: Removido el nombre redundante
             callback: () => {
-                this.activateView();
+                this.activateView().catch(console.error); // FIX: Promesa manejada
             }
         });
 
         this.addCommand({
-            id: 'insert-memory-palace-room',
-            name: 'Insert Room Template',
+            id: 'insert-room-template', // FIX: Removido el prefijo
+            name: 'Insert Room Template', // FIX: Removido el nombre redundante
             editorCallback: (editor, view) => {
                 const template = `\n## Room : \n- up: \n- down: \n- left: \n- right: \n`;
                 editor.replaceSelection(template);
@@ -37,13 +37,13 @@ export default class MemoryPalacePlugin extends Plugin {
         });
 
         this.addCommand({
-            id: 'refresh-memory-palace-view',
-            name: 'Refresh Memory Palace 3D',
+            id: 'refresh-view', // FIX: Removido el prefijo
+            name: 'Refresh View', // FIX: Removido el nombre redundante
             callback: () => {
                 const leaves = this.app.workspace.getLeavesOfType(MEMORY_PALACE_VIEW);
                 const view = leaves[0]?.view as MemoryPalaceView | undefined;
                 if (view) {
-                    view.refresh();
+                    view.refresh().catch(console.error); // FIX: Promesa manejada
                 }
             }
         });
@@ -56,11 +56,10 @@ export default class MemoryPalacePlugin extends Plugin {
     async saveSettings() {
         await this.saveData(this.settings);
         
-        // Disparar refresco automático al cambiar configuraciones
         const leaves = this.app.workspace.getLeavesOfType(MEMORY_PALACE_VIEW);
         const view = leaves[0]?.view as MemoryPalaceView | undefined;
         if (view) {
-            view.refresh();
+            view.refresh().catch(console.error); // FIX: Promesa manejada
         }
     }
 
@@ -73,7 +72,6 @@ export default class MemoryPalacePlugin extends Plugin {
         if (leaves.length > 0) {
             leaf = leaves[0] ?? null;
         } else {
-            // FIX: Volvemos al método correcto de la API y manejamos la nulidad estricta
             leaf = workspace.getRightLeaf(false) ?? null;
             
             if (leaf) {

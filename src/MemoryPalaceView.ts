@@ -41,7 +41,6 @@ export class MemoryPalaceView extends ItemView {
         const container = this.containerEl.children[1] as HTMLElement;
         container.empty();
         
-        // FIX: Uso de setCssStyles en lugar de estilo directo
         container.setCssStyles({
             overflow: "hidden",
             backgroundColor: "var(--background-primary)"
@@ -53,7 +52,6 @@ export class MemoryPalaceView extends ItemView {
 
         this.renderer = new CSS3DRenderer();
         
-        // FIX: Reemplazo de asignaciones estáticas del renderer DOM
         this.renderer.domElement.setCssStyles({
             pointerEvents: "auto",
             position: "absolute",
@@ -67,8 +65,8 @@ export class MemoryPalaceView extends ItemView {
         this.registerEvent(
             this.app.workspace.on("file-open", (file: TFile | null) => {
                 if (file && file.extension === "md" && file.path !== this.currentFilePath) {
-                    setTimeout(() => {
-                        this.refresh(file);
+                    window.setTimeout(() => { // FIX: Compatibilidad con popout
+                        this.refresh(file).catch(console.error); // FIX: Captura de promesa
                     }, 50);
                 }
             })
@@ -201,7 +199,7 @@ export class MemoryPalaceView extends ItemView {
                 e.stopPropagation();
                 const notePath = customTarget.getAttribute('data-target-note');
                 if (notePath) {
-                    this.app.workspace.openLinkText(notePath, sourcePath, false);
+                    this.app.workspace.openLinkText(notePath, sourcePath, false).catch(console.error); // FIX
                     return;
                 }
             }
@@ -212,7 +210,7 @@ export class MemoryPalaceView extends ItemView {
                 e.stopPropagation();
                 let linkText = clickable.getAttribute("data-href") || clickable.getAttribute("href") || clickable.textContent || "";
                 if (linkText) {
-                    this.app.workspace.openLinkText(linkText.trim(), sourcePath, false); 
+                    this.app.workspace.openLinkText(linkText.trim(), sourcePath, false).catch(console.error); // FIX
                 }
             }
         };
@@ -256,10 +254,10 @@ export class MemoryPalaceView extends ItemView {
     }
 
     private async createFloatingContent(markdown: string, sourcePath: string, size: number, x: number, y: number, z: number, roomColor: string) {
-        const contentDiv = document.createElement('div');
+        // FIX: Reemplazo de document por activeDocument para compatibilidad con popouts
+        const contentDiv = activeDocument.createElement('div');
         contentDiv.className = `mp-wall mp-floating-content`;
         
-        // FIX: Agrupar propiedades CSS estáticas
         contentDiv.setCssStyles({
             width: `${size}px`,
             height: `${size}px`,
@@ -268,7 +266,7 @@ export class MemoryPalaceView extends ItemView {
             boxSizing: "border-box"
         });
         
-        const innerDiv = document.createElement('div');
+        const innerDiv = activeDocument.createElement('div'); // FIX
         innerDiv.className = "mp-content";
         
         innerDiv.setCssStyles({
@@ -289,10 +287,15 @@ export class MemoryPalaceView extends ItemView {
         let processedMarkdown = await this.resolveBlockEmbeds(markdown, sourcePath);
 
         const itemRegex = /\[\[([^\]#|]+)(#[^\]|]+)?\]\]\(!?\[\[([^\]]+\.(?:png|jpe?g|gif|svg|webp|bmp))\]\]\)/gi;
-        processedMarkdown = processedMarkdown.replace(itemRegex, (match, baseNote, subTarget, imageName) => {
+        
+        // FIX: Tipado estricto en la función de callback del replace
+        processedMarkdown = processedMarkdown.replace(itemRegex, (match: string, baseNote?: string, subTarget?: string, imageName?: string) => {
             const base = baseNote?.trim() || "";
             const sub = subTarget?.trim() || "";
             const fullLinkPath = base + sub;
+            
+            if (!imageName) return match; // Guardia de seguridad TS
+            
             const file: TFile | null = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
             
             if (file) {
@@ -303,7 +306,9 @@ export class MemoryPalaceView extends ItemView {
         });
 
         const imageRegex = /!\[\[([^\]]+\.(png|jpe?g|gif|svg|webp|bmp))\]\]/gi;
-        processedMarkdown = processedMarkdown.replace(imageRegex, (match, imageName) => {
+        processedMarkdown = processedMarkdown.replace(imageRegex, (match: string, imageName?: string) => {
+            if (!imageName) return match; // Guardia de seguridad TS
+            
             const file: TFile | null = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
             if (file) {
                 const resourcePath = this.app.vault.getResourcePath(file);
@@ -378,7 +383,7 @@ export class MemoryPalaceView extends ItemView {
         const bgColor = room.color ? room.color : randomBgColor;
 
         if (room.customTitle) {
-            const titleDiv = document.createElement('div');
+            const titleDiv = activeDocument.createElement('div'); // FIX
             titleDiv.className = 'mp-room-title';
             
             titleDiv.setCssStyles({
@@ -484,7 +489,7 @@ export class MemoryPalaceView extends ItemView {
     }
 
     private async createWall(markdown: string, sourcePath: string, size: number, x: number, y: number, z: number, rotX: number, rotY: number, rotZ: number, side: string, bgColor: string) {
-        const wallDiv = document.createElement('div');
+        const wallDiv = activeDocument.createElement('div'); // FIX
         wallDiv.className = `mp-wall mp-wall-${side}`;
         
         wallDiv.setCssStyles({
@@ -496,7 +501,7 @@ export class MemoryPalaceView extends ItemView {
             boxSizing: "border-box"
         });
         
-        const contentDiv = document.createElement('div');
+        const contentDiv = activeDocument.createElement('div'); // FIX
         contentDiv.className = "mp-content";
         
         contentDiv.setCssStyles({
@@ -517,10 +522,15 @@ export class MemoryPalaceView extends ItemView {
         let processedMarkdown = await this.resolveBlockEmbeds(markdown, sourcePath);
 
         const itemRegex = /\[\[([^\]#|]+)(#[^\]|]+)?\]\]\(!?\[\[([^\]]+\.(?:png|jpe?g|gif|svg|webp|bmp))\]\]\)/gi;
-        processedMarkdown = processedMarkdown.replace(itemRegex, (match, baseNote, subTarget, imageName) => {
+        
+        // FIX: Tipado estricto
+        processedMarkdown = processedMarkdown.replace(itemRegex, (match: string, baseNote?: string, subTarget?: string, imageName?: string) => {
             const base = baseNote?.trim() || "";
             const sub = subTarget?.trim() || "";
             const fullLinkPath = base + sub;
+            
+            if (!imageName) return match; 
+            
             const file: TFile | null = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
             
             if (file) {
@@ -531,7 +541,9 @@ export class MemoryPalaceView extends ItemView {
         });
 
         const imageRegex = /!\[\[([^\]]+\.(png|jpe?g|gif|svg|webp|bmp))\]\]/gi;
-        processedMarkdown = processedMarkdown.replace(imageRegex, (match, imageName) => {
+        processedMarkdown = processedMarkdown.replace(imageRegex, (match: string, imageName?: string) => {
+            if (!imageName) return match;
+            
             const file: TFile | null = this.app.metadataCache.getFirstLinkpathDest(imageName, sourcePath);
             if (file) {
                 const resourcePath = this.app.vault.getResourcePath(file);
@@ -551,6 +563,7 @@ export class MemoryPalaceView extends ItemView {
         containers.forEach(child => {
             const el = child as HTMLElement;
             if (el.tagName !== 'IMG' && el.tagName !== 'A') {
+                // FIX: Uso directo y seguro sin casteos problemáticos
                 const styles: Partial<CSSStyleDeclaration> = { pointerEvents: 'none' };
                 if (!useFullSpace) {
                     styles.display = 'flex';
@@ -559,7 +572,7 @@ export class MemoryPalaceView extends ItemView {
                     styles.alignItems = 'center';
                     styles.gap = '20px';
                 }
-                el.setCssStyles(styles as any); // Type assertion segura
+                el.setCssStyles(styles);
             }
         });
 
@@ -623,7 +636,7 @@ export class MemoryPalaceView extends ItemView {
     }
 
     private animate = () => {
-        requestAnimationFrame(this.animate);
+        window.requestAnimationFrame(this.animate); // FIX: Compatibilidad con popout
         
         this.camera.position.x += (this.targetX - this.camera.position.x) * 0.1;
         this.camera.position.z += (this.targetZ - this.camera.position.z) * 0.1;

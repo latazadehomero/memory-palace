@@ -80,7 +80,8 @@ export default class MemoryPalacePlugin extends Plugin {
         }
 
         if (leaf) {
-            workspace.revealLeaf(leaf);
+            // FIX: Reemplazamos el problemático revealLeaf por setActiveLeaf
+            workspace.setActiveLeaf(leaf, { focus: true });
         }
     }
 }

@@ -1,11 +1,10 @@
 {
-	"id": "Memory-palace-3d",
-	"name": "Memory Palace 3D",
-	"version": "1.0.1",
-	"minAppVersion": "1.0.1",
-	"description": "Create your memory palaces in 3D",
-	"author": "Latazadehomero",
-	"authorUrl": "https://github.com/latazadehomero,
-,
-	"isDesktopOnly": true
+    "id": "memory-palace-3d",
+    "name": "Memory Palace 3D",
+    "version": "1.0.2",
+    "minAppVersion": "1.4.0",
+    "description": "Create your memory palaces in 3D",
+    "author": "Latazadehomero",
+    "authorUrl": "https://github.com/latazadehomero",
+    "isDesktopOnly": true
 }
